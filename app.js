@@ -1,6 +1,7 @@
 /* Zeikou — comms site logic
-   - videos: /api/videos (serverless YouTube RSS proxy) + /data/videos.json fallback
-   - player: YT IFrame API, full modal ⇄ mini player (bottom-right), video & audio-only
+   - videos: /api/videos (RSS proxy) + /data/videos.json fallback
+   - ONE permanent player shell that morphs full ⇄ mini:
+     the iframe never moves in the DOM, so minimize/expand never restarts the song
 */
 (() => {
   "use strict";
@@ -8,35 +9,29 @@
   const CHANNEL_URL = "https://www.youtube.com/@zeikouch";
   const grid = document.getElementById("video-grid");
   const feedNote = document.getElementById("feed-note");
-  const overlay = document.getElementById("player-overlay");
-  const stage = document.getElementById("player-stage");
-  const modalWrap = document.getElementById("player-frame-wrap");
-  const audioUI = document.getElementById("player-audio-ui");
-  const playerThumb = document.getElementById("player-thumb");
-  const playerTitle = document.getElementById("player-title");
-  const playerYt = document.getElementById("player-yt");
-  const playerClose = document.getElementById("player-close");
 
-  const mini = document.getElementById("mini-player");
-  const miniFrame = document.getElementById("mini-frame");
-  const miniAudioBtn = document.getElementById("mini-audio");
-  const miniThumb = document.getElementById("mini-thumb");
-  const miniInfo = document.getElementById("mini-info");
-  const miniTitle = document.getElementById("mini-title");
-  const miniMode = document.getElementById("mini-mode");
-  const miniPlay = document.getElementById("mini-play");
-  const miniExpand = document.getElementById("mini-expand");
-  const miniClose = document.getElementById("mini-close");
+  const root = document.getElementById("player-root");
+  const backdrop = document.getElementById("player-backdrop");
+  const stage = document.getElementById("ps-stage");
+  const frameBox = document.getElementById("ps-frame");
+  const audioUI = document.getElementById("ps-audio");
+  const thumb = document.getElementById("ps-thumb");
+  const title = document.getElementById("ps-title");
+  const ytLink = document.getElementById("ps-yt");
+
+  const miniTitle = document.getElementById("ps-mini-title");
+  const miniMode = document.getElementById("ps-mini-mode");
+  const miniInfo = document.getElementById("ps-mini-info");
 
   /* ---------------- state ---------------- */
   let mode = localStorage.getItem("zeikou-mode") || "video";
   let videos = [];
-  let current = null;          // current video object
+  let current = null;
   let player = null;
   let apiReady = false;
   let pendingId = null;
   let isPlaying = false;
-  let shell = null;            // #yt-shell wrapper (moving it never reloads the iframe)
+  let shellBuilt = false;
 
   /* ---------------- stars ---------------- */
   const stars = document.getElementById("stars");
@@ -60,25 +55,22 @@
   document.head.appendChild(tag);
   window.onYouTubeIframeAPIReady = () => { apiReady = true; flushPending(); };
 
-  function getShell() {
-    if (shell) return shell;
-    shell = document.createElement("div");
-    shell.id = "yt-shell";
+  function buildShell() {
+    if (shellBuilt) return;
+    shellBuilt = true;
     const holder = document.createElement("div");
     holder.id = "yt-player";
-    shell.appendChild(holder);
-    modalWrap.appendChild(shell);
-    return shell;
+    frameBox.appendChild(holder);
   }
 
   function ensurePlayer(videoId) {
     if (!apiReady) { pendingId = videoId; return; }
+    buildShell();
     if (player) {
       player.loadVideoById(videoId);
       player.playVideo();
       return;
     }
-    getShell();
     player = new YT.Player("yt-player", {
       videoId,
       playerVars: { autoplay: 1, rel: 0, playsinline: 1, modestbranding: 1 },
@@ -86,7 +78,8 @@
         onReady: (e) => e.target.playVideo(),
         onStateChange: (e) => {
           isPlaying = e.data === YT.PlayerState.PLAYING;
-          updatePlayBtn();
+          updatePlayIcons();
+          if (e.data === YT.PlayerState.ENDED) playNext();
         },
       },
     });
@@ -94,9 +87,19 @@
   function flushPending() {
     if (pendingId) { const id = pendingId; pendingId = null; ensurePlayer(id); }
   }
-  function updatePlayBtn() {
-    miniPlay.textContent = isPlaying ? "❚❚" : "▶";
-    miniPlay.setAttribute("aria-label", isPlaying ? "Pause" : "Play");
+
+  function updatePlayIcons() {
+    [document.getElementById("ps-play"), document.getElementById("pm-play")].forEach((btn) => {
+      if (!btn) return;
+      btn.querySelector(".ic-pause").hidden = !isPlaying;
+      btn.querySelector(".ic-play").hidden = isPlaying;
+      btn.setAttribute("aria-label", isPlaying ? "pause" : "play");
+    });
+  }
+
+  function togglePlay() {
+    if (!player) return;
+    if (isPlaying) player.pauseVideo(); else player.playVideo();
   }
 
   /* ---------------- data ---------------- */
@@ -112,6 +115,9 @@
   function localThumb(v) {
     const t = v.thumb || "";
     return t.startsWith("/assets/") ? t : `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
+  }
+  function ytUrl(v) {
+    return v.url || `https://www.youtube.com/watch?v=${v.id}`;
   }
 
   async function loadVideos() {
@@ -150,7 +156,7 @@
   function render() {
     grid.innerHTML = "";
     if (!videos.length) {
-      grid.innerHTML = '<div class="grid-skeleton">No covers loaded — <a href="' + CHANNEL_URL + '" target="_blank" rel="noopener">open the channel</a>.</div>';
+      grid.innerHTML = '<div class="grid-skeleton">nothing loaded yet. <a href="' + CHANNEL_URL + '" target="_blank" rel="noopener">open the channel</a></div>';
       return;
     }
     videos.forEach((v) => {
@@ -159,10 +165,11 @@
       card.setAttribute("role", "button");
       card.tabIndex = 0;
       const playingThis = current && current.id === v.id;
+      const icon = playingThis ? (isPlaying ? "❚❚" : "▶") : (mode === "audio" ? "♪" : "▶");
       card.innerHTML = `
         <div class="vcard-thumb">
           <img src="${localThumb(v)}" alt="" loading="lazy"/>
-          <div class="vcard-play"><span>${playingThis ? (mode === "audio" ? "♪" : "❚❚") : (mode === "audio" ? "♪" : "▶")}</span></div>
+          <div class="vcard-play"><span>${icon}</span></div>
         </div>
         <div class="vcard-body">
           <p class="vcard-title">${escapeHtml(v.title)}</p>
@@ -172,7 +179,7 @@
             ${v.published ? `<span>${fmtDate(v.published)}</span>` : ""}
           </div>
         </div>`;
-      const open = () => openFull(v);
+      const open = () => playVideo(v, "full");
       card.addEventListener("click", open);
       card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
       grid.appendChild(card);
@@ -183,88 +190,81 @@
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
-  /* ---------------- player: full ⇄ mini ---------------- */
-  function mountShell(container) {
-    const sh = getShell();
-    if (sh.parentElement !== container) container.appendChild(sh);
+  /* ---------------- player shell (full ⇄ mini) ---------------- */
+  function setState(state) {
+    root.dataset.state = state;
+    root.hidden = state === "closed";
+    document.body.classList.toggle("has-player", state !== "closed");
+    document.body.classList.toggle("has-mini", state === "mini");
+    document.body.classList.toggle("player-full", state === "full");
   }
 
-  function openFull(v) {
+  function applyVideoUI(v) {
+    title.textContent = v.title;
+    miniTitle.textContent = v.title;
+    ytLink.href = ytUrl(v);
+    thumb.src = localThumb(v);
+    thumb.alt = v.title;
+    document.title = `▶ ${v.title}`;
+  }
+
+  function playVideo(v, state) {
+    const sameVideo = current && current.id === v.id;
     current = v;
-    playerTitle.textContent = v.title;
-    playerYt.href = v.url || `https://www.youtube.com/watch?v=${v.id}`;
-    playerThumb.src = localThumb(v);
-    playerThumb.alt = v.title;
-    applyModeUI();
-    mountShell(modalWrap);
-    overlay.hidden = false;
-    setMini(false);
-    document.body.classList.add("player-open");
-    ensurePlayer(v.id);
+    applyVideoUI(v);
+    if (!sameVideo) ensurePlayer(v.id);
+    const newState = state || (root.dataset.state === "mini" ? "mini" : "full");
+    setState(newState);
     render();
   }
 
-  function minimize() {
-    if (!current) return;
-    overlay.hidden = true;
-    document.body.classList.remove("player-open");
-    mountShell(miniFrame);
-    miniTitle.textContent = current.title;
-    miniThumb.src = localThumb(current);
-    miniYt();
-    setMini(true);
-    applyModeUI();
-  }
-
-  function expand() {
-    if (!current) return;
-    mountShell(modalWrap);
-    overlay.hidden = false;
-    document.body.classList.add("player-open");
-    setMini(false);
-  }
+  function minimize() { if (current) setState("mini"); }
+  function expand() { if (current) setState("full"); }
 
   function stopAll() {
     if (player && player.stopVideo) player.stopVideo();
     isPlaying = false;
     current = null;
-    overlay.hidden = true;
-    document.body.classList.remove("player-open");
-    setMini(false);
-    updatePlayBtn();
+    setState("closed");
+    updatePlayIcons();
+    document.title = "Zeikou · vocal covers & mixing";
     render();
   }
 
-  function setMini(on) {
-    mini.hidden = !on;
-    document.body.classList.toggle("has-mini", on);
+  function playNext() {
+    if (!videos.length || !current) return;
+    const i = videos.findIndex((v) => v.id === current.id);
+    const next = videos[(i + 1) % videos.length];
+    playVideo(next);
   }
 
-  function miniYt() {
-    if (!current) return;
-    playerYt.href = current.url || `https://www.youtube.com/watch?v=${current.id}`;
+  function shuffle() {
+    if (!videos.length || !current) return;
+    const pool = videos.filter((v) => v.id !== current.id);
+    if (!pool.length) return;
+    playVideo(pool[Math.floor(Math.random() * pool.length)]);
   }
 
-  playerClose.addEventListener("click", minimize);
-  miniExpand.addEventListener("click", expand);
+  /* ---------------- wiring ---------------- */
+  document.getElementById("ps-minimize").addEventListener("click", minimize);
+  document.getElementById("ps-close").addEventListener("click", stopAll);
+  document.getElementById("ps-play").addEventListener("click", togglePlay);
+  document.getElementById("ps-shuffle").addEventListener("click", shuffle);
+  document.getElementById("pm-close").addEventListener("click", stopAll);
+  document.getElementById("pm-expand").addEventListener("click", expand);
+  document.getElementById("pm-play").addEventListener("click", togglePlay);
+  document.getElementById("pm-shuffle").addEventListener("click", shuffle);
   miniInfo.addEventListener("click", expand);
-  miniAudioBtn.addEventListener("click", expand);
-  miniClose.addEventListener("click", stopAll);
-  miniPlay.addEventListener("click", () => {
-    if (!player) return;
-    if (isPlaying) player.pauseVideo(); else player.playVideo();
-  });
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) minimize(); });
+  audioUI.addEventListener("click", () => { if (root.dataset.state === "mini") expand(); });
+  backdrop.addEventListener("click", minimize);
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !overlay.hidden) minimize();
+    if (e.key === "Escape" && root.dataset.state === "full") minimize();
   });
 
   /* ---------------- modes ---------------- */
   function applyModeUI() {
     stage.classList.toggle("audio-mode", mode === "audio");
-    mini.classList.toggle("audio-mode", mode === "audio");
-    audioUI.hidden = mode !== "audio";
-    miniMode.textContent = mode === "audio" ? "♪ audio only" : "▶ video";
+    miniMode.textContent = mode === "audio" ? "♪ audio" : "▶ video";
     document.querySelectorAll(".mode-toggle").forEach((g) => {
       g.querySelectorAll(".chip").forEach((c) => {
         const m = c.dataset.mode || c.dataset.pmode;
@@ -272,7 +272,6 @@
       });
     });
   }
-
   document.querySelectorAll(".mode-toggle").forEach((g) => {
     g.addEventListener("click", (e) => {
       const btn = e.target.closest(".chip");
@@ -292,17 +291,17 @@
     e.preventDefault();
     const fd = new FormData(form);
     const get = (k) => (fd.get(k) || "").toString().trim();
-    const subject = `[Mix Request] from ${get("name") || "anonymous"}`;
+    const subject = `[mix request] from ${get("name") || "anonymous"}`;
     const body = [
-      `Name: ${get("name")}`,
-      `Contact: ${get("contact")}`,
-      `Deadline: ${get("deadline") || "flexible"}`,
-      `References: ${get("refs") || "-"}`,
+      `name: ${get("name")}`,
+      `contact: ${get("contact")}`,
+      `deadline: ${get("deadline") || "flexible"}`,
+      `references: ${get("refs") || "-"}`,
       ``,
-      `Brief:`,
+      `brief:`,
       get("brief"),
       ``,
-      `(sent from zeikou comms site)`
+      `(sent from the zeikou site)`
     ].join("\n");
     window.location.href = `mailto:Zeikou@wyna.dev?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   });
