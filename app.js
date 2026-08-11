@@ -28,8 +28,10 @@
 
   /* ---------------- state ---------------- */
   let mode = localStorage.getItem("zeikou-mode") || "video";
+  let category = localStorage.getItem("zeikou-category") || "covers";
   let shuffleOn = localStorage.getItem("zeikou-shuffle") === "1";
   let videos = [];
+  let allVideos = [];
   let current = null;
   let player = null;
   let apiReady = false;
@@ -257,14 +259,22 @@
       }));
       if (!live) feedNote.hidden = false;
     }
-    videos = Array.isArray(data) ? data : [];
+    allVideos = Array.isArray(data) ? data : [];
+    applyCategory();
+  }
+
+  function applyCategory() {
+    videos = allVideos.filter((v) => (v.category || "covers") === category);
+    document.querySelectorAll("[data-category]").forEach((b) => {
+      b.classList.toggle("is-on", b.dataset.category === category);
+    });
     render();
   }
 
   function render() {
     grid.innerHTML = "";
     if (!videos.length) {
-      grid.innerHTML = '<div class="grid-skeleton">nothing loaded yet. <a href="' + CHANNEL_URL + '" target="_blank" rel="noopener">open the channel</a></div>';
+      grid.innerHTML = '<div class="grid-skeleton">nothing here yet. <a href="' + CHANNEL_URL + '" target="_blank" rel="noopener">open the channel</a></div>';
       return;
     }
     videos.forEach((v) => {
@@ -372,6 +382,14 @@
       });
     });
   }
+  document.querySelectorAll("[data-category]").forEach((b) => {
+    b.addEventListener("click", () => {
+      category = b.dataset.category;
+      localStorage.setItem("zeikou-category", category);
+      applyCategory();
+    });
+  });
+
   document.querySelectorAll(".mode-toggle").forEach((g) => {
     g.addEventListener("click", (e) => {
       const btn = e.target.closest(".chip");

@@ -41,4 +41,4 @@ http
       res.writeHead(404); res.end("not found");
     }
   })
-  .listen(8787, () => console.log("http://localhost:8787"));
+  .listen(Number(process.env.PORT || 8788), () => console.log(`http://localhost:${process.env.PORT || 8788}`));

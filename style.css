@@ -173,8 +173,10 @@ body.player-full { overflow: hidden; }
 }
 .chip:hover { border-color: var(--accent); color: var(--ink2); }
 .chip.is-on { background: rgba(217,139,163,.16); border-color: var(--accent); color: var(--accent-hover); box-shadow: 0 0 18px -6px rgba(217,139,163,.5); }
-.mode-toggle { display: inline-flex; gap: 8px; margin-top: 10px; }
-.mode-toggle .chip { min-width: 88px; text-align: center; }
+.category-toggle, .mode-toggle { display: inline-flex; gap: 8px; margin-top: 10px; }
+.category-toggle .chip, .mode-toggle .chip { min-width: 88px; text-align: center; }
+.category-toggle .chip { border-color: rgba(232,195,124,.28); }
+.category-toggle .chip.is-on { color: var(--gold); border-color: var(--gold); background: rgba(232,195,124,.12); box-shadow: 0 0 18px -7px rgba(232,195,124,.65); }
 
 /* ---------- sections ---------- */
 .section { position: relative; z-index: 2; max-width: 1080px; margin: 0 auto; padding: 46px 22px 10px; }
