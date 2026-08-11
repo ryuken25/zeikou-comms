@@ -24,7 +24,7 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 body {
   font-family: "Quicksand", "Karla", system-ui, sans-serif;
   background: var(--bg);
@@ -174,10 +174,13 @@ body.player-full { overflow: hidden; }
 .chip:hover { border-color: var(--accent); color: var(--ink2); }
 .chip.is-on { background: rgba(217,139,163,.16); border-color: var(--accent); color: var(--accent-hover); box-shadow: 0 0 18px -6px rgba(217,139,163,.5); }
 .category-toggle, .mode-toggle { display: inline-flex; gap: 8px; margin-top: 10px; }
-.category-toggle .chip, .mode-toggle .chip { min-width: 88px; text-align: center; }
+.category-toggle .chip, .mode-toggle .chip { min-width: 0; text-align: center; }
+.category-toggle { width: 100%; }
+.category-toggle .chip { flex: 1 1 0; }
 .category-toggle .chip { border-color: rgba(232,195,124,.28); }
 .category-toggle .chip.is-on { color: var(--gold); border-color: var(--gold); background: rgba(232,195,124,.12); box-shadow: 0 0 18px -7px rgba(232,195,124,.65); }
-.filter-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.filter-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; min-width: 0; }
+.filter-row .category-toggle { flex: 1 1 auto; min-width: 0; }
 .playback-toggle {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   width: 42px; height: 38px; padding: 8px;
@@ -532,9 +535,9 @@ body.has-mini .footer { padding-bottom: 150px; }
   .player-root[data-state="mini"] .player-shell { left: 12px; right: 12px; bottom: 12px; width: auto; }
   .player-root[data-state="full"] .player-shell { width: 96vw; }
   .filter-row { align-items: center; }
-  .category-toggle { max-width: calc(100% - 126px); overflow-x: auto; }
-  .category-toggle .chip { min-width: 76px; padding-left: 10px; padding-right: 10px; }
-  .playback-toggle { width: 42px; }
+  .category-toggle { max-width: none; width: 100%; overflow: visible; }
+  .category-toggle .chip { min-width: 0; padding-left: 7px; padding-right: 7px; }
+  .playback-toggle { width: 42px; flex: 0 0 42px; }
   .ps-fullrow { align-items: stretch; }
   .ps-fullrow .mode-toggle { flex: 1; }
   .ps-fullrow .mode-toggle .chip { flex: 1; min-width: 0; padding-left: 10px; padding-right: 10px; }
