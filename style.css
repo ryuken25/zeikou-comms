@@ -311,13 +311,15 @@ body.player-full { overflow: hidden; }
 .form-note { font-size: 12.5px; color: var(--faint); text-align: center; }
 
 /* ---------- faq ---------- */
+.faq-panel { min-height: 100%; }
 .faq-list { display: grid; gap: 10px; max-width: 760px; }
-.faq-item { padding: 16px 20px; }
+.faq-item { padding: 16px 20px; background: rgba(18,16,29,.28); }
 .faq-item summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--ink2); list-style: none; }
 .faq-item summary::-webkit-details-marker { display: none; }
 .faq-item summary::before { content: "✦ "; color: var(--accent); }
 .faq-item[open] summary::before { content: "✧ "; color: var(--gold); }
 .faq-item p { margin-top: 10px; color: var(--muted); font-size: 14px; }
+.faq-item[open] { border-color: var(--accent-deep); background: rgba(217,139,163,.07); }
 
 /* ---------- final cta / footer ---------- */
 .final-cta { text-align: center; padding: 70px 22px 60px; }
@@ -359,20 +361,38 @@ body.has-mini .footer { padding-bottom: 150px; }
               border-radius .38s ease;
 }
 
-/* ---- FULL state: centered modal ---- */
+/* ---- shared morph: the shell itself moves, iframe stays untouched ---- */
 .player-root[data-state="full"] .player-shell {
   left: 50%; top: 50%; width: min(880px, 94vw);
-  transform: translate(-50%, -50%);
-  animation: pop-in .3s cubic-bezier(.2,.7,.3,1.15);
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: 100% 100%;
+  animation: expand-from-dock .62s var(--ease-spring) both;
 }
-@keyframes pop-in { from { opacity: 0; transform: translate(-50%, -46%) scale(.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes expand-from-dock {
+  from {
+    left: calc(100% - 18px); top: calc(100% - 18px);
+    width: 320px;
+    transform: translate(-100%, -100%) scale(.34);
+    border-radius: 18px;
+    opacity: .88;
+  }
+  to {
+    left: 50%; top: 50%;
+    width: min(880px, 94vw);
+    transform: translate(-50%, -50%) scale(1);
+    border-radius: 22px;
+    opacity: 1;
+  }
+}
 
 /* ---- MINI state: docked bottom-right ---- */
 .player-root[data-state="mini"] .player-shell {
   right: 18px; bottom: 18px; width: 320px;
-  animation: mini-in .35s cubic-bezier(.2,.7,.3,1.3);
+  transform: translate(0, 0) scale(1);
+  transform-origin: 100% 100%;
+  animation: mini-in .35s var(--ease-spring) both;
 }
-@keyframes mini-in { from { transform: translateY(26px) scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes mini-in { from { transform: translate(0, 0) scale(.88); opacity: 0; } to { transform: translate(0, 0) scale(1); opacity: 1; } }
 
 /* ---- topbar with mac traffic lights ---- */
 .ps-topbar {
@@ -559,6 +579,22 @@ body.has-mini .footer { padding-bottom: 150px; }
   .price-row { grid-template-columns: 1fr; }
   .player-root[data-state="mini"] .player-shell { left: 12px; right: 12px; bottom: 12px; width: auto; }
   .player-root[data-state="full"] .player-shell { width: 96vw; }
+  @keyframes expand-from-dock {
+    from {
+      left: calc(100% - 12px); top: calc(100% - 12px);
+      width: calc(100% - 24px);
+      transform: translate(-100%, -100%) scale(.28);
+      border-radius: 16px;
+      opacity: .88;
+    }
+    to {
+      left: 50%; top: 50%;
+      width: 96vw;
+      transform: translate(-50%, -50%) scale(1);
+      border-radius: 22px;
+      opacity: 1;
+    }
+  }
   .filter-row { align-items: center; }
   .category-toggle { max-width: none; width: 100%; overflow: visible; }
   .category-toggle .chip { min-width: 0; padding-left: 7px; padding-right: 7px; }
@@ -581,7 +617,7 @@ body.has-mini .footer { padding-bottom: 150px; }
     max-width: 1180px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 28px;
     align-items: start;
   }
@@ -596,6 +632,8 @@ body.has-mini .footer { padding-bottom: 150px; }
   #covers .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
   #mixing .price-row { grid-template-columns: minmax(300px, .78fr) minmax(0, 1.22fr); }
   #request, #faq { padding-top: 74px; }
+  #request .section-head, #faq .section-head { min-height: 44px; }
+  #request .request-form, #faq .faq-panel { min-height: 532px; }
   #request .request-form { max-width: none; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #request .request-form .field:nth-child(5),
   #request .request-form > button,
