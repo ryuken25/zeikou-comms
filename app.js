@@ -14,17 +14,21 @@
   const backdrop = document.getElementById("player-backdrop");
   const stage = document.getElementById("ps-stage");
   const frameBox = document.getElementById("ps-frame");
-  const audioUI = document.getElementById("ps-audio");
   const thumb = document.getElementById("ps-thumb");
   const title = document.getElementById("ps-title");
-  const ytLink = document.getElementById("ps-yt");
-
   const miniTitle = document.getElementById("ps-mini-title");
   const miniMode = document.getElementById("ps-mini-mode");
   const miniInfo = document.getElementById("ps-mini-info");
 
+  const psCur = document.getElementById("ps-cur");
+  const psDur = document.getElementById("ps-dur");
+  const psTrack = document.getElementById("ps-track");
+  const psFill = document.getElementById("ps-fill");
+  const psKnob = document.getElementById("ps-knob");
+
   /* ---------------- state ---------------- */
   let mode = localStorage.getItem("zeikou-mode") || "video";
+  let shuffleOn = localStorage.getItem("zeikou-shuffle") === "1";
   let videos = [];
   let current = null;
   let player = null;
@@ -32,6 +36,9 @@
   let pendingId = null;
   let isPlaying = false;
   let shellBuilt = false;
+  let duration = 0;
+  let seekTimer = null;
+  let dragging = false;
 
   /* ---------------- stars ---------------- */
   const stars = document.getElementById("stars");
@@ -75,11 +82,12 @@
       videoId,
       playerVars: { autoplay: 1, rel: 0, playsinline: 1, modestbranding: 1 },
       events: {
-        onReady: (e) => e.target.playVideo(),
+        onReady: (e) => { e.target.playVideo(); startSeekLoop(); },
         onStateChange: (e) => {
           isPlaying = e.data === YT.PlayerState.PLAYING;
           updatePlayIcons();
           if (e.data === YT.PlayerState.ENDED) playNext();
+          if (e.data === YT.PlayerState.PLAYING) duration = e.target.getDuration() || duration;
         },
       },
     });
@@ -88,6 +96,74 @@
     if (pendingId) { const id = pendingId; pendingId = null; ensurePlayer(id); }
   }
 
+  /* ---------------- seek / progress ---------------- */
+  function fmtTime(sec) {
+    if (!sec || isNaN(sec) || sec < 0) sec = 0;
+    const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+  }
+
+  function paintProgress(cur, dur) {
+    const pct = dur > 0 ? Math.min(100, (cur / dur) * 100) : 0;
+    psFill.style.width = pct + "%";
+    psKnob.style.left = pct + "%";
+    psCur.textContent = fmtTime(cur);
+    psDur.textContent = fmtTime(dur);
+  }
+
+  function startSeekLoop() {
+    if (seekTimer) return;
+    seekTimer = setInterval(() => {
+      if (!player || !player.getCurrentTime) return;
+      if (dragging) return;
+      try {
+        const cur = player.getCurrentTime() || 0;
+        duration = player.getDuration() || duration;
+        paintProgress(cur, duration);
+      } catch (e) { /* iframe not ready */ }
+    }, 500);
+  }
+
+  /* drag / click to seek */
+  function seekFromEvent(e) {
+    const rect = psTrack.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const ratio = Math.min(1, Math.max(0, x / rect.width));
+    return ratio;
+  }
+  function applySeek(ratio) {
+    if (!duration) return;
+    const t = ratio * duration;
+    paintProgress(t, duration);
+    if (player && player.seekTo) player.seekTo(t, true);
+  }
+  function onSeekStart(e) {
+    if (!player) return;
+    dragging = true;
+    psTrack.classList.add("is-active");
+    const move = (ev) => { applySeekPreview(seekFromEvent(ev)); };
+    const up = (ev) => {
+      dragging = false;
+      psTrack.classList.remove("is-active");
+      applySeek(seekFromEvent(ev.changedTouches ? ev.changedTouches[0] : ev));
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("touchmove", move);
+      window.removeEventListener("touchend", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("touchmove", move, { passive: true });
+    window.addEventListener("touchend", up);
+  }
+  function applySeekPreview(ratio) {
+    if (!duration) return;
+    paintProgress(ratio * duration, duration);
+  }
+  psTrack.addEventListener("pointerdown", onSeekStart);
+  psTrack.addEventListener("touchstart", onSeekStart, { passive: true });
+
+  /* ---------------- transport ---------------- */
   function updatePlayIcons() {
     [document.getElementById("ps-play"), document.getElementById("pm-play")].forEach((btn) => {
       if (!btn) return;
@@ -102,6 +178,39 @@
     if (isPlaying) player.pauseVideo(); else player.playVideo();
   }
 
+  function idx() { return videos.findIndex((v) => current && v.id === current.id); }
+
+  function playNext() {
+    if (!videos.length || !current) return;
+    if (shuffleOn && videos.length > 1) {
+      const pool = videos.filter((v) => v.id !== current.id);
+      playVideo(pool[Math.floor(Math.random() * pool.length)]);
+    } else {
+      playVideo(videos[(idx() + 1) % videos.length]);
+    }
+  }
+  function playPrev() {
+    if (!videos.length || !current) return;
+    if (player && player.getCurrentTime && player.getCurrentTime() > 4) {
+      player.seekTo(0, true);
+      return;
+    }
+    if (shuffleOn && videos.length > 1) {
+      const pool = videos.filter((v) => v.id !== current.id);
+      playVideo(pool[Math.floor(Math.random() * pool.length)]);
+    } else {
+      playVideo(videos[(idx() - 1 + videos.length) % videos.length]);
+    }
+  }
+
+  function toggleShuffle() {
+    shuffleOn = !shuffleOn;
+    localStorage.setItem("zeikou-shuffle", shuffleOn ? "1" : "0");
+    [document.getElementById("ps-shuffle")].forEach((b) => b && b.classList.toggle("is-active", shuffleOn));
+  }
+  const shuffleBtn = document.getElementById("ps-shuffle");
+  if (shuffleBtn) shuffleBtn.classList.toggle("is-active", shuffleOn);
+
   /* ---------------- data ---------------- */
   function fmtDur(sec) {
     if (!sec) return "";
@@ -115,9 +224,6 @@
   function localThumb(v) {
     const t = v.thumb || "";
     return t.startsWith("/assets/") ? t : `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
-  }
-  function ytUrl(v) {
-    return v.url || `https://www.youtube.com/watch?v=${v.id}`;
   }
 
   async function loadVideos() {
@@ -197,14 +303,20 @@
     document.body.classList.toggle("has-player", state !== "closed");
     document.body.classList.toggle("has-mini", state === "mini");
     document.body.classList.toggle("player-full", state === "full");
+    const inFull = state === "full";
+    const inMini = state === "mini";
+    // mac lights: yellow(min) only works from full, green(max) only from mini
+    document.getElementById("ps-minimize").classList.toggle("is-disabled", !inFull);
+    document.getElementById("ps-maximize").classList.toggle("is-disabled", !inMini);
   }
 
   function applyVideoUI(v) {
     title.textContent = v.title;
     miniTitle.textContent = v.title;
-    ytLink.href = ytUrl(v);
     thumb.src = localThumb(v);
     thumb.alt = v.title;
+    duration = v.duration || 0;
+    paintProgress(0, duration);
     document.title = `▶ ${v.title}`;
   }
 
@@ -218,8 +330,8 @@
     render();
   }
 
-  function minimize() { if (current) setState("mini"); }
-  function expand() { if (current) setState("full"); }
+  function minimize() { if (current && root.dataset.state === "full") setState("mini"); }
+  function expand() { if (current && root.dataset.state === "mini") setState("full"); }
 
   function stopAll() {
     if (player && player.stopVideo) player.stopVideo();
@@ -231,31 +343,17 @@
     render();
   }
 
-  function playNext() {
-    if (!videos.length || !current) return;
-    const i = videos.findIndex((v) => v.id === current.id);
-    const next = videos[(i + 1) % videos.length];
-    playVideo(next);
-  }
-
-  function shuffle() {
-    if (!videos.length || !current) return;
-    const pool = videos.filter((v) => v.id !== current.id);
-    if (!pool.length) return;
-    playVideo(pool[Math.floor(Math.random() * pool.length)]);
-  }
-
   /* ---------------- wiring ---------------- */
   document.getElementById("ps-minimize").addEventListener("click", minimize);
+  document.getElementById("ps-maximize").addEventListener("click", expand);
   document.getElementById("ps-close").addEventListener("click", stopAll);
   document.getElementById("ps-play").addEventListener("click", togglePlay);
-  document.getElementById("ps-shuffle").addEventListener("click", shuffle);
-  document.getElementById("pm-close").addEventListener("click", stopAll);
-  document.getElementById("pm-expand").addEventListener("click", expand);
+  document.getElementById("ps-prev").addEventListener("click", playPrev);
+  document.getElementById("ps-next").addEventListener("click", playNext);
+  document.getElementById("ps-shuffle").addEventListener("click", toggleShuffle);
   document.getElementById("pm-play").addEventListener("click", togglePlay);
-  document.getElementById("pm-shuffle").addEventListener("click", shuffle);
+  document.getElementById("pm-next").addEventListener("click", playNext);
   miniInfo.addEventListener("click", expand);
-  audioUI.addEventListener("click", () => { if (root.dataset.state === "mini") expand(); });
   backdrop.addEventListener("click", minimize);
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && root.dataset.state === "full") minimize();

@@ -353,6 +353,14 @@ body.has-mini .footer { padding-bottom: 150px; }
 .light-min:hover { background: #ffd06e; filter: drop-shadow(0 0 6px rgba(245,189,79,.7)); }
 .light-go { background: #61c554; color: #14520c; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); }
 .light-go:hover { background: #74dd66; filter: drop-shadow(0 0 6px rgba(97,197,84,.7)); }
+.light-max { background: #61c554; color: #14520c; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); }
+.light-max:hover { background: #74dd66; filter: drop-shadow(0 0 6px rgba(97,197,84,.7)); }
+.light.is-disabled {
+  background: #3a3350; cursor: default; opacity: .55;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+}
+.light.is-disabled:hover { transform: none; filter: none; background: #3a3350; }
+.light.is-disabled svg { display: none; }
 
 .ps-title {
   flex: 1; min-width: 0; font-weight: 700; font-size: 14px; color: var(--ink);
@@ -412,23 +420,66 @@ body.has-mini .footer { padding-bottom: 150px; }
 .eq i:nth-child(5) { height: 14px; animation-delay: .6s; }
 @keyframes eq { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
 
-/* ---- full bottom bar ---- */
+/* ---- full bottom bar: seek + transport ---- */
 .ps-fullbar {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 12px 16px; flex-wrap: wrap;
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 14px 16px 16px;
 }
 .player-root[data-state="mini"] .ps-fullbar { display: none; }
-.ps-transport { display: flex; gap: 10px; align-items: center; }
+
+/* seekbar */
+.ps-seek { display: flex; align-items: center; gap: 10px; }
+.ps-time {
+  font-size: 11.5px; color: var(--muted); font-weight: 600;
+  font-variant-numeric: tabular-nums; min-width: 34px; text-align: center;
+}
+.ps-track {
+  flex: 1; height: 5px; border-radius: 3px; position: relative;
+  background: rgba(255,255,255,.09); cursor: pointer;
+  transition: height .15s ease;
+}
+.ps-track:hover, .ps-track.is-active { height: 7px; }
+.ps-fill {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  box-shadow: 0 0 12px -2px rgba(217,139,163,.7);
+  pointer-events: none;
+}
+.ps-knob {
+  position: absolute; top: 50%; left: 0%; width: 13px; height: 13px;
+  border-radius: 50%; transform: translate(-50%, -50%) scale(0);
+  background: var(--gold); border: 2px solid #1a1628;
+  box-shadow: 0 0 10px -1px rgba(232,195,124,.8);
+  transition: transform .15s ease;
+  pointer-events: none;
+}
+.ps-track:hover .ps-knob, .ps-track.is-active .ps-knob { transform: translate(-50%, -50%) scale(1); }
+
+.ps-fullrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ps-fullrow .mode-toggle { margin-top: 0; }
+.ps-transport { display: flex; gap: 9px; align-items: center; }
 .ps-tbtn {
-  width: 42px; height: 42px; border-radius: 50%;
+  width: 40px; height: 40px; border-radius: 50%;
   border: 1px solid var(--line); background: var(--card); color: var(--ink2);
   display: grid; place-items: center; cursor: pointer;
   transition: all .18s ease;
 }
 .ps-tbtn:hover { border-color: var(--accent); color: var(--accent-hover); transform: scale(1.07); box-shadow: 0 0 20px -6px rgba(217,139,163,.6); }
-.ps-tbtn .ic { width: 16px; height: 16px; }
-#ps-shuffle .ic { width: 18px; height: 18px; }
-.ps-tbtn.is-active { border-color: var(--gold); color: var(--gold); }
+.ps-tbtn .ic { width: 15px; height: 15px; }
+#ps-shuffle .ic { width: 17px; height: 17px; }
+.ps-tbtn.is-active { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 18px -6px rgba(232,195,124,.7); }
+.ps-tbtn-main {
+  width: 50px; height: 50px;
+  background: linear-gradient(140deg, var(--accent), var(--accent-deep));
+  color: #241019; border: 0;
+  box-shadow: 0 10px 22px -8px rgba(217,139,163,.75);
+}
+.ps-tbtn-main:hover {
+  background: linear-gradient(140deg, var(--accent-hover), var(--accent));
+  color: #241019; transform: scale(1.09);
+}
+.ps-tbtn-main .ic { width: 19px; height: 19px; }
 
 /* ---- mini bar ---- */
 .ps-minibar { display: none; align-items: center; gap: 8px; padding: 9px 12px; border-top: 1px solid var(--line); }

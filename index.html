@@ -179,7 +179,7 @@
       <div class="ps-lights">
         <button class="light light-close" id="ps-close" title="stop"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3.5 3.5l5 5M8.5 3.5l-5 5"/></svg></button>
         <button class="light light-min" id="ps-minimize" title="minimize, keeps playing"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6h6"/></svg></button>
-        <a class="light light-go" id="ps-yt" title="open on youtube" target="_blank" rel="noopener"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l5-5M4.5 3.5H8.5v4"/></svg></a>
+        <button class="light light-max" id="ps-maximize" title="maximize"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2.5h2.5V5M5 9.5H2.5V7M9.5 2.5L6.8 5.2M2.5 9.5l2.7-2.7"/></svg></button>
       </div>
       <p class="ps-title" id="ps-title"></p>
       <span class="ps-topspacer"></span>
@@ -195,37 +195,49 @@
     </div>
 
     <div class="ps-fullbar">
-      <div class="mode-toggle">
-        <button class="chip" data-pmode="video">▶ video</button>
-        <button class="chip" data-pmode="audio">♪ audio only</button>
+      <div class="ps-seek">
+        <span class="ps-time" id="ps-cur">0:00</span>
+        <div class="ps-track" id="ps-track">
+          <div class="ps-fill" id="ps-fill"></div>
+          <div class="ps-knob" id="ps-knob"></div>
+        </div>
+        <span class="ps-time" id="ps-dur">0:00</span>
       </div>
-      <div class="ps-transport">
-        <button class="ps-tbtn" id="ps-play" aria-label="play or pause">
-          <svg class="ic ic-pause" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5.5 3v10M10.5 3v10"/></svg>
-          <svg class="ic ic-play" hidden viewBox="0 0 16 16" fill="currentColor"><path d="M5 3l8 5-8 5z"/></svg>
-        </button>
-        <button class="ps-tbtn" id="ps-shuffle" aria-label="shuffle" title="shuffle">
-          <svg class="ic" viewBox="0 0 18 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4h2.2l8.6 8H14"/><path d="M1 12h2.2l2.3-2.3"/><path d="M9.8 6.3L12.6 4H14"/><path d="M13.4 2l2 2-2 2"/><path d="M13.4 10l2 2-2 2"/></svg>
-        </button>
+      <div class="ps-fullrow">
+        <div class="mode-toggle">
+          <button class="chip" data-pmode="video">▶ video</button>
+          <button class="chip" data-pmode="audio">♪ audio only</button>
+        </div>
+        <div class="ps-transport">
+          <button class="ps-tbtn" id="ps-prev" aria-label="previous" title="previous">
+            <svg class="ic" viewBox="0 0 16 16" fill="currentColor"><path d="M12.6 3.2v9.6c0 .5-.55.8-.97.53L5.6 9.05a.65.65 0 0 1 0-1.1l6.03-4.28c.42-.27.97.03.97.53z"/><rect x="3" y="3.2" width="1.9" height="9.6" rx=".95"/></svg>
+          </button>
+          <button class="ps-tbtn ps-tbtn-main" id="ps-play" aria-label="play or pause">
+            <svg class="ic ic-pause" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5.4 3v10M10.6 3v10"/></svg>
+            <svg class="ic ic-play" viewBox="0 0 16 16" fill="currentColor"><path d="M5.2 3.05v9.9c0 .55.6.88 1.05.6l7.2-4.95a.72.72 0 0 0 0-1.2l-7.2-4.95a.72.72 0 0 0-1.05.6z"/></svg>
+          </button>
+          <button class="ps-tbtn" id="ps-next" aria-label="next" title="next">
+            <svg class="ic" viewBox="0 0 16 16" fill="currentColor"><path d="M3.4 3.2v9.6c0 .5.55.8.97.53l6.03-4.28a.65.65 0 0 0 0-1.1L4.37 3.67a.63.63 0 0 0-.97.53z"/><rect x="11.1" y="3.2" width="1.9" height="9.6" rx=".95"/></svg>
+          </button>
+          <button class="ps-tbtn" id="ps-shuffle" aria-label="shuffle mode" title="shuffle: next tracks get randomized">
+            <svg class="ic" viewBox="0 0 18 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4h2.2l8.6 8H14"/><path d="M1 12h2.2l2.3-2.3"/><path d="M9.8 6.3L12.6 4H14"/><path d="M13.4 2l2 2-2 2"/><path d="M13.4 10l2 2-2 2"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
     <div class="ps-minibar">
-      <div class="ps-lights">
-        <button class="light light-close" id="pm-close" title="stop"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3.5 3.5l5 5M8.5 3.5l-5 5"/></svg></button>
-        <button class="light light-go" id="pm-expand" title="expand"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2.5h2.5V5M5 9.5H2.5V7M9.5 2.5L6.8 5.2M2.5 9.5l2.7-2.7"/></svg></button>
-      </div>
       <div class="ps-mini-info" id="ps-mini-info" title="expand">
         <p class="ps-mini-title" id="ps-mini-title"></p>
         <p class="ps-mini-mode" id="ps-mini-mode">▶ video</p>
       </div>
       <div class="ps-mini-controls">
         <button class="mini-btn" id="pm-play" aria-label="play or pause">
-          <svg class="ic ic-pause" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5.5 3v10M10.5 3v10"/></svg>
-          <svg class="ic ic-play" hidden viewBox="0 0 16 16" fill="currentColor"><path d="M5 3l8 5-8 5z"/></svg>
+          <svg class="ic ic-pause" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5.4 3v10M10.6 3v10"/></svg>
+          <svg class="ic ic-play" viewBox="0 0 16 16" fill="currentColor"><path d="M5.2 3.05v9.9c0 .55.6.88 1.05.6l7.2-4.95a.72.72 0 0 0 0-1.2l-7.2-4.95a.72.72 0 0 0-1.05.6z"/></svg>
         </button>
-        <button class="mini-btn" id="pm-shuffle" aria-label="shuffle" title="shuffle">
-          <svg class="ic" viewBox="0 0 18 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4h2.2l8.6 8H14"/><path d="M1 12h2.2l2.3-2.3"/><path d="M9.8 6.3L12.6 4H14"/><path d="M13.4 2l2 2-2 2"/><path d="M13.4 10l2 2-2 2"/></svg>
+        <button class="mini-btn" id="pm-next" aria-label="next" title="next">
+          <svg class="ic" viewBox="0 0 16 16" fill="currentColor"><path d="M3.4 3.2v9.6c0 .5.55.8.97.53l6.03-4.28a.65.65 0 0 0 0-1.1L4.37 3.67a.63.63 0 0 0-.97.53z"/><rect x="11.1" y="3.2" width="1.9" height="9.6" rx=".95"/></svg>
         </button>
       </div>
     </div>
