@@ -269,7 +269,13 @@
     document.querySelectorAll("[data-category]").forEach((b) => {
       b.classList.toggle("is-on", b.dataset.category === category);
     });
-    render();
+    const hasCards = grid.querySelector(".vcard");
+    if (!hasCards) { render(); return; }
+    grid.classList.add("is-switching");
+    window.setTimeout(() => {
+      render();
+      requestAnimationFrame(() => grid.classList.remove("is-switching"));
+    }, 150);
   }
 
   function render() {
