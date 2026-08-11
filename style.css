@@ -570,6 +570,41 @@ body.has-mini .footer { padding-bottom: 150px; }
   body.has-mini .footer { padding-bottom: 200px; }
 }
 
+/* ---------- wide desktop composition ---------- */
+@media (min-width: 900px) {
+  .nav-inner, .hero-inner { max-width: 1180px; }
+  .hero { padding-top: 88px; padding-bottom: 70px; }
+  .hero-inner { gap: 72px; }
+  .hero-avatar { width: 242px; height: 242px; }
+
+  main {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr);
+    column-gap: 28px;
+    align-items: start;
+  }
+  main > .section { max-width: none; width: 100%; padding-left: 0; padding-right: 0; }
+  main > #covers,
+  main > #mixing,
+  main > .final-cta { grid-column: 1 / -1; }
+  main > #request { grid-column: 1; }
+  main > #faq { grid-column: 2; }
+
+  #covers { padding-top: 62px; }
+  #covers .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+  #mixing .price-row { grid-template-columns: minmax(300px, .78fr) minmax(0, 1.22fr); }
+  #request, #faq { padding-top: 74px; }
+  #request .request-form { max-width: none; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #request .request-form .field:nth-child(5),
+  #request .request-form > button,
+  #request .request-form .form-note { grid-column: 1 / -1; }
+  #faq .faq-list { max-width: none; }
+  #faq .faq-item { min-height: 58px; display: flex; flex-direction: column; justify-content: center; }
+  .final-cta { padding-top: 96px; padding-bottom: 82px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
