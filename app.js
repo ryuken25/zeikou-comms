@@ -167,8 +167,10 @@
   function updatePlayIcons() {
     [document.getElementById("ps-play"), document.getElementById("pm-play")].forEach((btn) => {
       if (!btn) return;
-      btn.querySelector(".ic-pause").hidden = !isPlaying;
-      btn.querySelector(".ic-play").hidden = isPlaying;
+      const icon = btn.querySelector(".play-toggle path");
+      if (icon) icon.setAttribute("d", isPlaying
+        ? "M4 2h3v12H4zM9 2h3v12H9z"
+        : "M5.2 3.05v9.9c0 .55.6.88 1.05.6l7.2-4.95a.72.72 0 0 0 0-1.2l-7.2-4.95a.72.72 0 0 0-1.05.6z");
       btn.setAttribute("aria-label", isPlaying ? "pause" : "play");
     });
   }
@@ -362,7 +364,7 @@
   /* ---------------- modes ---------------- */
   function applyModeUI() {
     stage.classList.toggle("audio-mode", mode === "audio");
-    miniMode.textContent = mode === "audio" ? "♪ audio" : "▶ video";
+    miniMode.textContent = mode === "audio" ? "audio only" : "video";
     document.querySelectorAll(".mode-toggle").forEach((g) => {
       g.querySelectorAll(".chip").forEach((c) => {
         const m = c.dataset.mode || c.dataset.pmode;

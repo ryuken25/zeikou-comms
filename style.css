@@ -174,6 +174,7 @@ body.player-full { overflow: hidden; }
 .chip:hover { border-color: var(--accent); color: var(--ink2); }
 .chip.is-on { background: rgba(217,139,163,.16); border-color: var(--accent); color: var(--accent-hover); box-shadow: 0 0 18px -6px rgba(217,139,163,.5); }
 .mode-toggle { display: inline-flex; gap: 8px; margin-top: 10px; }
+.mode-toggle .chip { min-width: 88px; text-align: center; }
 
 /* ---------- sections ---------- */
 .section { position: relative; z-index: 2; max-width: 1080px; margin: 0 auto; padding: 46px 22px 10px; }
@@ -513,6 +514,10 @@ body.has-mini .footer { padding-bottom: 150px; }
   .price-row { grid-template-columns: 1fr; }
   .player-root[data-state="mini"] .player-shell { left: 12px; right: 12px; bottom: 12px; width: auto; }
   .player-root[data-state="full"] .player-shell { width: 96vw; }
+  .ps-fullrow { align-items: stretch; }
+  .ps-fullrow .mode-toggle { flex: 1; }
+  .ps-fullrow .mode-toggle .chip { flex: 1; min-width: 0; padding-left: 10px; padding-right: 10px; }
+  .ps-transport { margin-left: auto; }
   body.has-mini .footer { padding-bottom: 200px; }
 }
 
