@@ -382,7 +382,6 @@
       playbackToggle.setAttribute("aria-pressed", String(audio));
       playbackToggle.setAttribute("aria-label", audio ? "switch to video" : "switch to audio only");
       playbackToggle.title = audio ? "switch to video" : "switch to audio only";
-      playbackToggle.querySelector(".playback-status").textContent = audio ? "audio only" : "video";
     }
     document.querySelectorAll(".mode-toggle").forEach((g) => {
       g.querySelectorAll(".chip").forEach((c) => {
