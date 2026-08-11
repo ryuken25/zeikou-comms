@@ -9,6 +9,7 @@
   const CHANNEL_URL = "https://www.youtube.com/@zeikouch";
   const grid = document.getElementById("video-grid");
   const feedNote = document.getElementById("feed-note");
+  const playbackToggle = document.getElementById("playback-toggle");
 
   const root = document.getElementById("player-root");
   const backdrop = document.getElementById("player-backdrop");
@@ -373,8 +374,16 @@
 
   /* ---------------- modes ---------------- */
   function applyModeUI() {
-    stage.classList.toggle("audio-mode", mode === "audio");
-    miniMode.textContent = mode === "audio" ? "audio only" : "video";
+    const audio = mode === "audio";
+    stage.classList.toggle("audio-mode", audio);
+    miniMode.textContent = audio ? "audio only" : "video";
+    if (playbackToggle) {
+      playbackToggle.dataset.mode = audio ? "audio" : "video";
+      playbackToggle.setAttribute("aria-pressed", String(audio));
+      playbackToggle.setAttribute("aria-label", audio ? "switch to video" : "switch to audio only");
+      playbackToggle.title = audio ? "switch to video" : "switch to audio only";
+      playbackToggle.querySelector(".playback-status").textContent = audio ? "audio only" : "video";
+    }
     document.querySelectorAll(".mode-toggle").forEach((g) => {
       g.querySelectorAll(".chip").forEach((c) => {
         const m = c.dataset.mode || c.dataset.pmode;
@@ -382,6 +391,12 @@
       });
     });
   }
+  if (playbackToggle) playbackToggle.addEventListener("click", () => {
+    mode = mode === "audio" ? "video" : "audio";
+    localStorage.setItem("zeikou-mode", mode);
+    applyModeUI();
+    render();
+  });
   document.querySelectorAll("[data-category]").forEach((b) => {
     b.addEventListener("click", () => {
       category = b.dataset.category;

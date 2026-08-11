@@ -177,6 +177,21 @@ body.player-full { overflow: hidden; }
 .category-toggle .chip, .mode-toggle .chip { min-width: 88px; text-align: center; }
 .category-toggle .chip { border-color: rgba(232,195,124,.28); }
 .category-toggle .chip.is-on { color: var(--gold); border-color: var(--gold); background: rgba(232,195,124,.12); box-shadow: 0 0 18px -7px rgba(232,195,124,.65); }
+.filter-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.playback-toggle {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-width: 112px; min-height: 38px; padding: 8px 13px;
+  border: 1px solid var(--accent-deep); border-radius: 999px;
+  background: rgba(217,139,163,.10); color: var(--accent-hover);
+  cursor: pointer; transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.playback-toggle:hover { background: rgba(217,139,163,.18); border-color: var(--accent); transform: translateY(-1px); }
+.playback-toggle[data-mode="audio"] { color: var(--gold); border-color: var(--gold); background: rgba(232,195,124,.11); }
+.playback-icon { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.icon-audio { display: none; }
+.playback-toggle[data-mode="audio"] .icon-video { display: none; }
+.playback-toggle[data-mode="audio"] .icon-audio { display: block; }
+.playback-status { font-size: 12px; font-weight: 700; white-space: nowrap; }
 
 /* ---------- sections ---------- */
 .section { position: relative; z-index: 2; max-width: 1080px; margin: 0 auto; padding: 46px 22px 10px; }
@@ -516,6 +531,10 @@ body.has-mini .footer { padding-bottom: 150px; }
   .price-row { grid-template-columns: 1fr; }
   .player-root[data-state="mini"] .player-shell { left: 12px; right: 12px; bottom: 12px; width: auto; }
   .player-root[data-state="full"] .player-shell { width: 96vw; }
+  .filter-row { align-items: center; }
+  .category-toggle { max-width: calc(100% - 126px); overflow-x: auto; }
+  .category-toggle .chip { min-width: 76px; padding-left: 10px; padding-right: 10px; }
+  .playback-toggle { min-width: 108px; }
   .ps-fullrow { align-items: stretch; }
   .ps-fullrow .mode-toggle { flex: 1; }
   .ps-fullrow .mode-toggle .chip { flex: 1; min-width: 0; padding-left: 10px; padding-right: 10px; }
