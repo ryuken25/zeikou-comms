@@ -180,10 +180,11 @@ body.player-full { overflow: hidden; }
 .category-toggle .chip { border-color: rgba(232,195,124,.28); }
 .category-toggle .chip.is-on { color: var(--gold); border-color: var(--gold); background: rgba(232,195,124,.12); box-shadow: 0 0 18px -7px rgba(232,195,124,.65); }
 .filter-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; min-width: 0; }
-.filter-row .category-toggle { flex: 1 1 auto; min-width: 0; }
+.filter-row .category-toggle { flex: 1 1 auto; min-width: 0; margin-top: 0; }
+.filter-row .category-toggle .chip { height: 40px; min-height: 40px; padding-top: 0; padding-bottom: 0; }
 .playback-toggle {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  width: 42px; height: 38px; padding: 8px;
+  width: 42px; height: 40px; padding: 8px;
   border: 1px solid var(--accent-deep); border-radius: 999px;
   background: rgba(217,139,163,.10); color: var(--accent-hover);
   cursor: pointer; transition: border-color .18s ease, background .18s ease, transform .18s ease;
