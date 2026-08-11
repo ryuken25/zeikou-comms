@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="/style.css"/>
 </head>
 <body>
+<div class="aurora" aria-hidden="true"></div>
 <div class="stars" id="stars" aria-hidden="true"></div>
 
 <nav class="navbar">
@@ -40,6 +41,7 @@
   <div class="hero-inner">
     <div class="hero-avatar-wrap" data-anim="float">
       <img class="hero-avatar" src="/assets/avatar.jpg" alt="Zeikou avatar" width="220" height="220"/>
+      <span class="hero-ring" aria-hidden="true"></span>
       <span class="hero-glow" aria-hidden="true"></span>
     </div>
     <div class="hero-text">
@@ -63,9 +65,9 @@
 
 <main>
   <section class="section" id="covers">
-    <div class="section-head">
+    <div class="section-head reveal">
       <h2 class="section-title">Covers</h2>
-      <p class="section-sub">Fetched live from the channel — video, or just the audio.</p>
+      <p class="section-sub">Fetched live from the channel — watch the video, or just vibe with the audio. Minimize it like Spotify.</p>
       <div class="mode-toggle" role="group" aria-label="Playback mode">
         <button class="chip is-on" data-mode="video">▶ Video</button>
         <button class="chip" data-mode="audio">♪ Audio only</button>
@@ -78,19 +80,19 @@
   </section>
 
   <section class="section" id="mixing">
-    <div class="section-head">
+    <div class="section-head reveal">
       <h2 class="section-title">Mixing</h2>
       <p class="section-sub">Vocal mixing for your utattemita & covers.</p>
     </div>
     <div class="price-row">
-      <div class="card price-card">
+      <div class="card price-card reveal">
         <div class="price-badge">Mixing</div>
         <p class="price-amount">200k<span class="price-plus">+</span></p>
         <p class="price-note">DM for more info</p>
         <a class="price-mail" href="mailto:Zeikou@wyna.dev">Zeikou@wyna.dev</a>
         <button class="btn btn-primary btn-block" data-open-request>Open a Request</button>
       </div>
-      <div class="card terms-card">
+      <div class="card terms-card reveal">
         <h3 class="mini-title">What you get</h3>
         <ul class="terms-list">
           <li>Vocal mixing & mastering, tuned to your voice</li>
@@ -103,11 +105,11 @@
   </section>
 
   <section class="section" id="request">
-    <div class="section-head">
+    <div class="section-head reveal">
       <h2 class="section-title">Request a Mix</h2>
       <p class="section-sub">Fill the brief — it opens your mail app addressed to Kou.</p>
     </div>
-    <form class="card request-form" id="request-form">
+    <form class="card request-form reveal" id="request-form">
       <label class="field">
         <span>Name</span>
         <input name="name" type="text" placeholder="Your name" required/>
@@ -134,18 +136,18 @@
   </section>
 
   <section class="section" id="faq">
-    <div class="section-head">
+    <div class="section-head reveal">
       <h2 class="section-title">FAQ</h2>
     </div>
     <div class="faq-list">
-      <details class="card faq-item"><summary>Do you only mix covers?</summary><p>Mostly utattemita & covers, but DM anyway — collabs and projects are welcome.</p></details>
-      <details class="card faq-item"><summary>How long does a mix take?</summary><p>Usually a few days up to a week depending on queue — deadline? Tell me in the request.</p></details>
-      <details class="card faq-item"><summary>Payment?</summary><p>Details via DM after we agree on scope. 200k+ base rate.</p></details>
-      <details class="card faq-item"><summary>Can I use your cover audio?</summary><p>DM first, please — credit always required.</p></details>
+      <details class="card faq-item reveal"><summary>Do you only mix covers?</summary><p>Mostly utattemita & covers, but DM anyway — collabs and projects are welcome.</p></details>
+      <details class="card faq-item reveal"><summary>How long does a mix take?</summary><p>Usually a few days up to a week depending on queue — deadline? Tell me in the request.</p></details>
+      <details class="card faq-item reveal"><summary>Payment?</summary><p>Details via DM after we agree on scope. 200k+ base rate.</p></details>
+      <details class="card faq-item reveal"><summary>Can I use your cover audio?</summary><p>DM first, please — credit always required.</p></details>
     </div>
   </section>
 
-  <section class="section final-cta">
+  <section class="section final-cta reveal">
     <img class="final-avatar" src="/assets/avatar.jpg" alt="Zeikou" width="96" height="96"/>
     <h2 class="final-title">Let's make something worth listening to.</h2>
     <p class="final-sub">Send a short brief: song, vibe, deadline. Kou replies within 1–2 days.</p>
@@ -166,12 +168,12 @@
   </p>
 </footer>
 
-<!-- Player modal -->
+<!-- Full player modal -->
 <div class="player-overlay" id="player-overlay" hidden>
   <div class="player-panel" role="dialog" aria-modal="true" aria-label="Player">
     <div class="player-top">
       <p class="player-title" id="player-title"></p>
-      <button class="btn btn-ghost btn-sm" id="player-close" aria-label="Close">✕ Close</button>
+      <button class="btn btn-ghost btn-sm" id="player-close" aria-label="Minimize to mini player" title="Minimize — keeps playing">▁ Minimize</button>
     </div>
     <div class="player-stage video-mode" id="player-stage">
       <div class="player-frame-wrap" id="player-frame-wrap"></div>
@@ -186,10 +188,35 @@
         <button class="chip" data-pmode="video">▶ Video</button>
         <button class="chip" data-pmode="audio">♪ Audio only</button>
       </div>
-      <a class="btn btn-ghost btn-sm" id="player-yt" target="_blank" rel="noopener">Open on YouTube ↗</a>
+      <div class="player-bottom-right">
+        <span class="player-hint">minimize keeps it playing ↘</span>
+        <a class="btn btn-ghost btn-sm" id="player-yt" target="_blank" rel="noopener">Open on YouTube ↗</a>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Mini player (bottom-right, YouTube/Spotify style) -->
+<aside class="mini-player" id="mini-player" hidden aria-label="Mini player">
+  <div class="mini-visual">
+    <div class="mini-frame" id="mini-frame"></div>
+    <button class="mini-audio" id="mini-audio" type="button" title="Expand player">
+      <img id="mini-thumb" alt="" width="54" height="54"/>
+      <span class="eq eq-mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    </button>
+  </div>
+  <div class="mini-bar">
+    <div class="mini-info" id="mini-info">
+      <p class="mini-title" id="mini-title"></p>
+      <p class="mini-mode" id="mini-mode">▶ video</p>
+    </div>
+    <div class="mini-controls">
+      <button class="mini-btn" id="mini-play" aria-label="Play or pause">❚❚</button>
+      <button class="mini-btn" id="mini-expand" aria-label="Expand player" title="Expand">⤢</button>
+      <button class="mini-btn" id="mini-close" aria-label="Stop and close" title="Stop">✕</button>
+    </div>
+  </div>
+</aside>
 
 <script src="/app.js"></script>
 </body>
