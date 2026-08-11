@@ -219,7 +219,7 @@
       ``,
       `(sent from zeikou comms site)`
     ].join("\n");
-    window.location.href = `mailto:zeikou@kenshi.dev?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:Zeikou@wyna.dev?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   });
 
   /* ---------------- open-request buttons ---------------- */
