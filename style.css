@@ -351,7 +351,21 @@ body.player-full .cursor-glow { visibility: hidden; animation-play-state: paused
   background: rgba(13,11,22,.6);
 }
 .footer img { margin: 0 auto 10px; border-radius: 50%; opacity: .9; }
-.footer-links { margin-top: 6px; }
+.footer-links { margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+.footer-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+  background: rgba(255,255,255,.02);
+  transition: color .18s ease, border-color .18s ease, transform .18s ease, background .18s ease;
+}
+.footer-icon:hover { color: var(--accent-hover); border-color: var(--accent); background: rgba(217,139,163,.09); transform: translateY(-2px); }
+.footer-icon svg { width: 16px; height: 16px; }
 body.has-mini .footer { padding-bottom: 150px; }
 
 /* ================================================================
