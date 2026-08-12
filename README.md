@@ -9,7 +9,7 @@ Structure inspired by suzu-comms; night-plum theme matched to Zeikou's art.
 - ✅ Fallback to `/data/videos.json` (scraped snapshot) when the feed is unreachable
 - ▶ Video mode: plays the actual YouTube video in a modal
 - ♪ Audio-only mode: hidden player (sound only) + visualizer UI, preference persisted
-- 💰 Price list: Mixing **200k+ / DM for more info** — `Zeikou@wyna.dev`
+- 💰 Price list: Mixing **200k+ / DM for more info** — `zeikou.uta@gmail.com`
 - 📩 Request form (opens mail client, no backend needed)
 - 🌌 Starfield background, GSAP-less CSS animations, fully responsive
 
@@ -33,4 +33,4 @@ curl -s "https://www.youtube.com/feeds/videos.xml?channel_id=UCKw-FdF0DPlKoRGwCF
 ## Channel
 - YouTube: https://www.youtube.com/@zeikouch (UC Kw-FdF0DPlKoRGwCFBcQQA)
 - X: @Zeikou_Ch
-- Email: Zeikou@wyna.dev
+- Email: zeikou.uta@gmail.com

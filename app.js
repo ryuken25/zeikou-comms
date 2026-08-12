@@ -511,7 +511,7 @@
       ``,
       `(sent from the zeikou site)`
     ].join("\n");
-    window.location.href = `mailto:Zeikou@wyna.dev?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:zeikou.uta@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   });
 
   document.querySelectorAll("[data-open-request]").forEach((b) => {
