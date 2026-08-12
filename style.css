@@ -47,6 +47,14 @@ button { font-family: inherit; }
 ::selection { background: rgba(217,139,163,.35); }
 body.player-full { overflow: hidden; }
 
+/* Keep decorative work off the compositor while the player owns the screen. */
+body.player-full .aurora,
+body.player-full .stars,
+body.player-full .cursor-glow { visibility: hidden; animation-play-state: paused; }
+
+/* Sections below the fold do not need a full paint on first load. */
+#mixing, #request, #faq, .final-cta, .footer { content-visibility: auto; contain-intrinsic-size: 1px 720px; }
+
 /* ---------- aurora ---------- */
 .aurora { position: fixed; inset: -20% -10%; z-index: 0; pointer-events: none; filter: blur(90px); opacity: .5; }
 .aurora::before, .aurora::after { content: ""; position: absolute; border-radius: 50%; }
@@ -80,6 +88,16 @@ body.player-full { overflow: hidden; }
   will-change: transform;
 }
 @media (hover: none) { .cursor-glow { display: none; } }
+
+@media (hover: none), (pointer: coarse), (max-width: 760px) {
+  .aurora { filter: blur(42px); opacity: .34; }
+  .hero-ring { animation-duration: 38s; }
+  .hero-avatar, .final-avatar { animation: none; }
+  .price-card::before { animation: none; }
+  .vcard-thumb img { transition: none; }
+  .vcard::after { display: none; }
+  .reveal { transition-duration: .38s; }
+}
 
 /* ---------- navbar ---------- */
 .navbar {
@@ -343,7 +361,8 @@ body.has-mini .footer { padding-bottom: 150px; }
 
 .player-backdrop {
   position: fixed; inset: 0; z-index: 98;
-  background: rgba(8, 6, 16, .86); backdrop-filter: blur(6px);
+  /* The overlay is already opaque enough; full-viewport blur was a major GPU cost. */
+  background: rgba(8, 6, 16, .90);
   opacity: 0; pointer-events: none; transition: opacity .3s ease;
 }
 .player-root[data-state="full"] .player-backdrop { opacity: 1; pointer-events: auto; }

@@ -59,10 +59,18 @@
     stars.appendChild(s);
   }
 
-  /* ---------------- yt iframe api ---------------- */
-  const tag = document.createElement("script");
-  tag.src = "https://www.youtube.com/iframe_api";
-  document.head.appendChild(tag);
+  /* ---------------- yt iframe api ----------------
+     Do not load YouTube's widget on page load. The player is opt-in, so keep
+     the initial page free of the iframe API and its compositor work. */
+  let ytRequested = false;
+  function requestYouTubeApi() {
+    if (ytRequested || apiReady) return;
+    ytRequested = true;
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    tag.async = true;
+    document.head.appendChild(tag);
+  }
   window.onYouTubeIframeAPIReady = () => { apiReady = true; flushPending(); };
 
   function buildShell() {
@@ -74,7 +82,11 @@
   }
 
   function ensurePlayer(videoId) {
-    if (!apiReady) { pendingId = videoId; return; }
+    if (!apiReady) {
+      pendingId = videoId;
+      requestYouTubeApi();
+      return;
+    }
     buildShell();
     if (player) {
       player.loadVideoById(videoId);
@@ -234,7 +246,7 @@
   async function loadVideos() {
     let fallback = [];
     try {
-      const r2 = await fetch("/data/videos.json", { cache: "no-store" });
+      const r2 = await fetch("/data/videos.json", { cache: "default" });
       if (r2.ok) fallback = await r2.json();
     } catch (e) { /* ignore */ }
     const fb = {};
@@ -242,7 +254,7 @@
 
     let data = null, live = false;
     try {
-      const r = await fetch("/api/videos", { cache: "no-store" });
+      const r = await fetch("/api/videos", { cache: "default" });
       if (r.ok) {
         const j = await r.json();
         live = !!j.live;
@@ -461,18 +473,40 @@
     io.observe(el);
   });
 
-  /* ---------------- cursor glow ---------------- */
+  /* ---------------- cursor glow ----------------
+     Animate only while the pointer is moving. A permanent RAF here used to
+     consume a frame budget even when the glow was invisible on touch devices. */
   const glow = document.createElement("div");
   glow.className = "cursor-glow";
   document.body.appendChild(glow);
   let gx = -500, gy = -500, tx = -500, ty = -500;
-  window.addEventListener("pointermove", (e) => { tx = e.clientX; ty = e.clientY; }, { passive: true });
-  (function animGlow() {
+  let glowRaf = 0;
+  let glowActive = false;
+  const animateGlow = () => {
     gx += (tx - gx) * 0.12;
     gy += (ty - gy) * 0.12;
     glow.style.transform = `translate(${gx - 160}px, ${gy - 160}px)`;
-    requestAnimationFrame(animGlow);
-  })();
+    const settled = Math.abs(tx - gx) < 0.5 && Math.abs(ty - gy) < 0.5;
+    if (!settled && !document.hidden && !document.body.classList.contains("player-full")) {
+      glowRaf = requestAnimationFrame(animateGlow);
+    } else {
+      glowRaf = 0;
+      glowActive = false;
+    }
+  };
+  window.addEventListener("pointermove", (e) => {
+    if (e.pointerType && e.pointerType !== "mouse") return;
+    tx = e.clientX; ty = e.clientY;
+    if (!glowActive && !document.hidden && !document.body.classList.contains("player-full")) {
+      glowActive = true;
+      if (!glowRaf) glowRaf = requestAnimationFrame(animateGlow);
+    }
+  }, { passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && glowRaf) cancelAnimationFrame(glowRaf);
+    glowRaf = 0;
+    glowActive = false;
+  });
 
   /* ---------------- hero parallax ---------------- */
   const heroAvatar = document.querySelector(".hero-avatar-wrap");
