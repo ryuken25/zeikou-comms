@@ -238,9 +238,28 @@
     if (!iso) return "";
     return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   }
+  function thumbCandidates(v) {
+    const candidates = [];
+    const local = (v.thumb || "").trim();
+    if (local.startsWith("/assets/")) candidates.push(local);
+    if (v.id) {
+      candidates.push(`https://i.ytimg.com/vi/${v.id}/sddefault.jpg`);
+      candidates.push(`https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`);
+    }
+    return [...new Set(candidates)];
+  }
+
   function localThumb(v) {
-    const t = v.thumb || "";
-    return t.startsWith("/assets/") ? t : `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
+    return thumbCandidates(v)[0] || "";
+  }
+
+  function bindThumbFallback(img, video) {
+    const candidates = thumbCandidates(video);
+    let index = Math.max(0, candidates.indexOf(img.src));
+    img.addEventListener("error", () => {
+      index += 1;
+      if (index < candidates.length) img.src = candidates[index];
+    });
   }
 
   async function loadVideos() {
@@ -316,6 +335,8 @@
             ${v.published ? `<span>${fmtDate(v.published)}</span>` : ""}
           </div>
         </div>`;
+      const thumb = card.querySelector(".vcard-thumb img");
+      if (thumb) bindThumbFallback(thumb, v);
       const open = () => playVideo(v, "full");
       card.addEventListener("click", open);
       card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
