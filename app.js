@@ -348,26 +348,55 @@
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
-  /* ---------------- player shell (full ⇄ mini) ---------------- */
-  function setState(state) {
-    const previous = root.dataset.state;
-    const motion = state === "full" && previous !== "full" ? "is-expanding" : state === "mini" && previous === "full" ? "is-minimizing" : "";
-    root.classList.remove("is-expanding", "is-minimizing");
+  /* ---------------- player shell (full ⇄ mini) ----------------
+     FLIP morph: measure the settled box, apply the destination layout, then
+     animate the exact inverse geometry. This avoids height:auto/keyframe
+     overshoot and keeps the iframe mounted in the same DOM node. */
+  function paintState(state) {
     root.dataset.state = state;
     root.hidden = state === "closed";
     document.body.classList.toggle("has-player", state !== "closed");
     document.body.classList.toggle("has-mini", state === "mini");
     document.body.classList.toggle("player-full", state === "full");
-    if (motion) {
-      root.classList.add(motion);
-      const shell = root.querySelector(".player-shell");
-      shell?.addEventListener("animationend", () => root.classList.remove(motion), { once: true });
-    }
     const inFull = state === "full";
     const inMini = state === "mini";
-    // mac lights: yellow(min) only works from full, green(max) only from mini
     document.getElementById("ps-minimize").classList.toggle("is-disabled", !inFull);
     document.getElementById("ps-maximize").classList.toggle("is-disabled", !inMini);
+  }
+
+  function setState(state) {
+    const previous = root.dataset.state;
+    const shell = root.querySelector(".player-shell");
+    const canMorph = shell && (previous === "full" || previous === "mini") && (state === "full" || state === "mini") && previous !== state;
+    if (!canMorph) {
+      paintState(state);
+      return;
+    }
+
+    const from = shell.getBoundingClientRect();
+    shell.getAnimations().forEach((animation) => animation.cancel());
+    shell.style.transition = "none";
+    shell.style.transformOrigin = "0 0";
+    paintState(state);
+    const to = shell.getBoundingClientRect();
+    const dx = from.left - to.left;
+    const dy = from.top - to.top;
+    const sx = to.width ? from.width / to.width : 1;
+    const sy = to.height ? from.height / to.height : 1;
+    const base = state === "full" ? "translate(-50%, -50%)" : "translate(0, 0)";
+    const startTransform = `${base} translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+    const endTransform = base;
+    shell.style.transform = startTransform;
+    const animation = shell.animate(
+      [{ transform: startTransform }, { transform: endTransform }],
+      { duration: 520, easing: "cubic-bezier(.22,.61,.36,1)", fill: "forwards" },
+    );
+    animation.finished.catch(() => {}).finally(() => {
+      if (shell.getAnimations().includes(animation)) animation.cancel();
+      shell.style.transform = "";
+      shell.style.transition = "";
+      shell.style.transformOrigin = "";
+    });
   }
 
   function applyVideoUI(v) {
