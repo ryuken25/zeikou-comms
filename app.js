@@ -329,11 +329,19 @@
 
   /* ---------------- player shell (full ⇄ mini) ---------------- */
   function setState(state) {
+    const previous = root.dataset.state;
+    const motion = state === "full" && previous !== "full" ? "is-expanding" : state === "mini" && previous === "full" ? "is-minimizing" : "";
+    root.classList.remove("is-expanding", "is-minimizing");
     root.dataset.state = state;
     root.hidden = state === "closed";
     document.body.classList.toggle("has-player", state !== "closed");
     document.body.classList.toggle("has-mini", state === "mini");
     document.body.classList.toggle("player-full", state === "full");
+    if (motion) {
+      root.classList.add(motion);
+      const shell = root.querySelector(".player-shell");
+      shell?.addEventListener("animationend", () => root.classList.remove(motion), { once: true });
+    }
     const inFull = state === "full";
     const inMini = state === "mini";
     // mac lights: yellow(min) only works from full, green(max) only from mini
