@@ -27,7 +27,7 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; overflow-x: hidden; }
+html { scroll-behavior: smooth; overflow-x: hidden; scroll-padding-top: 64px; }
 body {
   font-family: "Quicksand", "Karla", system-ui, sans-serif;
   background: var(--bg);
@@ -101,17 +101,27 @@ body.player-full .cursor-glow { visibility: hidden; animation-play-state: paused
 
 /* ---------- navbar ---------- */
 .navbar {
-  position: sticky; top: 0; z-index: 50;
-  background: rgba(18, 16, 29, .82);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 64px;
+  background: rgba(18, 16, 29, .88);
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--line);
 }
 .nav-inner {
-  max-width: 1080px; margin: 0 auto; padding: 10px 22px;
-  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  max-width: 1080px;
+  height: 64px;
+  margin: 0 auto;
+  padding: 10px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
 }
-.nav-brand { display: flex; align-items: center; gap: 12px; color: var(--ink); }
-.nav-brand img { border-radius: 50%; border: 2px solid var(--accent-deep); }
+.nav-brand { display: flex; align-items: center; gap: 12px; color: var(--ink); flex: 0 0 auto; min-width: 0; }
+.nav-brand img { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 50%; border: 2px solid var(--accent-deep); }
 .nav-title { font-weight: 700; font-size: 17px; display: block; letter-spacing: .02em; }
 .nav-sub { font-size: 11px; color: var(--muted); display: block; }
 .nav-links { display: flex; align-items: center; gap: 18px; font-size: 14px; }
